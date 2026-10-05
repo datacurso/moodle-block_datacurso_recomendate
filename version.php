@@ -29,7 +29,7 @@ $plugin->release = '1.0.4';
 $plugin->version = 2025123000;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->supported = [405, 501];
+$plugin->supported = [405, 500];
 $plugin->dependencies = [
     'local_datacurso_ratings' => 2025120200,
 ];
