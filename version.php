@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'block_datacurso_recomendate';
 $plugin->release = '1.0.5-wp';
-$plugin->version = 2026100501;
+$plugin->version = 2026100502;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->supported = [405, 405];
