@@ -75,8 +75,13 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
      * Spec: MDL-E2E-014.
      */
     public function test_view_selector_uses_bootstrap5_class(): void {
-        global $CFG;
+        global $CFG, $DB;
         $this->resetAfterTest();
+
+        // Recommendations need the ratings tables; CI installs the block without its dependency.
+        if (!$DB->get_manager()->table_exists('local_datacurso_ratings')) {
+            $this->markTestSkipped('local_datacurso_ratings is not installed.');
+        }
 
         $html = $this->render_block_with_recommendations();
 
