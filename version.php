@@ -25,11 +25,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'block_datacurso_recomendate';
-$plugin->release = '1.0.4';
-$plugin->version = 2025123000;
+$plugin->release = '1.0.5';
+$plugin->version = 2026100501;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->supported = [405, 501];
+$plugin->supported = [405, 502];
 $plugin->dependencies = [
     'local_datacurso_ratings' => 2025120200,
 ];

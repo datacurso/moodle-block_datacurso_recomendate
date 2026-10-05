@@ -228,7 +228,7 @@ class block_datacurso_recomendate extends block_base {
             false,
             [
                 'id' => 'viewmode-selector',
-                'class' => 'custom-select',
+                'class' => 'form-select',
             ]
         );
 

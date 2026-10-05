@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - MOODLE_*_STABLE
   pull_request:
 
 jobs:
@@ -45,6 +46,9 @@ jobs:
             database: mariadb
           - php: 8.3
             moodle-branch: MOODLE_501_STABLE
+            database: mariadb
+          - php: 8.3
+            moodle-branch: MOODLE_502_STABLE
             database: mariadb
 
     steps:
