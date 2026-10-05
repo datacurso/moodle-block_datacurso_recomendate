@@ -55,6 +55,8 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
             'feedback' => '',
             'timecreated' => $now,
             'timemodified' => $now,
+            // Workplace ratings are tenant-scoped and the recommendation service filters by the user's tenant.
+            'tenant_id' => \tool_tenant\tenancy::get_tenant_id($user->id),
         ]);
 
         \cache::make('local_datacurso_ratings', 'recommendations')->purge();
