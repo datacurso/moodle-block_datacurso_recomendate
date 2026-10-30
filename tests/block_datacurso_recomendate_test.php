@@ -29,9 +29,10 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
     /**
      * Render the block for a user who has at least one recommendation.
      *
+     * @param array $candidate Extra properties for the recommended course (for example its fullname).
      * @return string The block content HTML.
      */
-    private function render_block_with_recommendations(): string {
+    private function render_block_with_recommendations(array $candidate = []): string {
         global $DB;
 
         $generator = $this->getDataGenerator();
@@ -39,7 +40,7 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
         $user = $generator->create_user();
 
         // A course the user is not enrolled in becomes a recommendation candidate.
-        $generator->create_course(['category' => $category->id, 'visible' => 1]);
+        $generator->create_course(['category' => $category->id, 'visible' => 1] + $candidate);
 
         // A liked activity in another course of the same category builds a 100% category preference.
         $ratedcourse = $generator->create_course(['category' => $category->id, 'visible' => 1]);
@@ -95,5 +96,45 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
         if ((int) $CFG->branch >= 500) {
             $this->assertNotContains('custom-select', $classes);
         }
+    }
+
+    /**
+     * Course names with special characters are escaped exactly once.
+     *
+     * Spec: MDL-INT-006.
+     */
+    public function test_course_name_is_escaped_once(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        if (!$DB->get_manager()->table_exists('local_datacurso_ratings')) {
+            $this->markTestSkipped('local_datacurso_ratings is not installed.');
+        }
+
+        $html = $this->render_block_with_recommendations(['fullname' => 'Science & "Arts"']);
+
+        $this->assertStringContainsString('>Science &amp; &quot;Arts&quot;</a>', $html);
+        $this->assertStringContainsString('alt="Science &amp; &quot;Arts&quot;"', $html);
+        $this->assertStringNotContainsString('&amp;amp;', $html);
+        $this->assertStringNotContainsString('&amp;quot;', $html);
+    }
+
+    /**
+     * Course names never inject markup into the block.
+     *
+     * Spec: MDL-INT-006.
+     */
+    public function test_course_name_does_not_inject_markup(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        if (!$DB->get_manager()->table_exists('local_datacurso_ratings')) {
+            $this->markTestSkipped('local_datacurso_ratings is not installed.');
+        }
+
+        $html = $this->render_block_with_recommendations(['fullname' => '<script>alert(1)</script>Evil" onerror="x']);
+
+        $this->assertStringNotContainsString('<script>alert(1)</script>', $html);
+        $this->assertStringNotContainsString('" onerror="x', $html);
     }
 }
