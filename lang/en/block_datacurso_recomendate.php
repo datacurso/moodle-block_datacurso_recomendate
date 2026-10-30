@@ -33,6 +33,7 @@ $string['pluginname'] = 'Recommended courses';
 $string['poweredbydatacurso'] = 'Powered by';
 $string['preference'] = 'Category preference: {$a}%';
 $string['privacy:metadata'] = 'The block_datacurso_recomendate plugin does not store any personal data.';
+$string['recserror'] = 'The recommended courses could not be loaded. Please try again later.';
 $string['satisfaction'] = 'Overall satisfaction: {$a}%';
 $string['score'] = 'Score: {$a}';
 $string['view_cards'] = 'Card view';
