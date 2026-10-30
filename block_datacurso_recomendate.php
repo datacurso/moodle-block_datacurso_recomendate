@@ -216,8 +216,10 @@ class block_datacurso_recomendate extends block_base {
             ];
         }
 
+        // Paging links stay on the page that hosts the block (Dashboard or site home), keeping its parameters.
+        $baseurl = new moodle_url($this->page->url);
+
         // View selector.
-        $baseurl = new moodle_url('/my/index.php');
         $selector = html_writer::select(
             [
                 'cards' => get_string('view_cards', 'block_datacurso_recomendate'),
