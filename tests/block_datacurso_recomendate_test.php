@@ -29,18 +29,22 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
     /**
      * Render the block for a user who has at least one recommendation.
      *
-     * @param array $candidate Extra properties for the recommended course (for example its fullname).
+     * @param int $count Number of recommended courses to create.
+     * @param \moodle_url|null $pageurl URL of the page that hosts the block (defaults to the Dashboard).
+     * @param array $candidate Extra properties for each recommended course (for example its fullname).
      * @return string The block content HTML.
      */
-    private function render_block_with_recommendations(array $candidate = []): string {
+    private function render_block_with_recommendations(int $count = 1, ?\moodle_url $pageurl = null, array $candidate = []): string {
         global $DB;
 
         $generator = $this->getDataGenerator();
         $category = $generator->create_category();
         $user = $generator->create_user();
 
-        // A course the user is not enrolled in becomes a recommendation candidate.
-        $generator->create_course(['category' => $category->id, 'visible' => 1] + $candidate);
+        // Courses the user is not enrolled in become recommendation candidates.
+        for ($i = 0; $i < $count; $i++) {
+            $generator->create_course(['category' => $category->id, 'visible' => 1] + $candidate);
+        }
 
         // A liked activity in another course of the same category builds a 100% category preference.
         $ratedcourse = $generator->create_course(['category' => $category->id, 'visible' => 1]);
@@ -66,7 +70,7 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
         $record = $generator->create_block('datacurso_recomendate');
         $page = new \moodle_page();
         $page->set_context(\context_system::instance());
-        $page->set_url('/my/index.php');
+        $page->set_url($pageurl ?? new \moodle_url('/my/index.php'));
         $block = block_instance('datacurso_recomendate', $record, $page);
 
         return $block->get_content()->text;
@@ -101,11 +105,11 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
     }
 
     /**
-     * Course names with special characters are escaped exactly once.
+     * The paging bar links point to the page that hosts the block, keeping its parameters.
      *
-     * Spec: MDL-INT-006.
+     * Spec: MDL-E2E-003.
      */
-    public function test_course_name_is_escaped_once(): void {
+    public function test_pagination_links_use_current_page_url(): void {
         global $DB;
         $this->resetAfterTest();
 
@@ -113,31 +117,11 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
             $this->markTestSkipped('local_datacurso_ratings is not installed.');
         }
 
-        $html = $this->render_block_with_recommendations(['fullname' => 'Science & "Arts"']);
+        // Seven recommendations need two pages of six.
+        $html = $this->render_block_with_recommendations(7, new \moodle_url('/index.php', ['redirect' => 0]));
 
-        $this->assertStringContainsString('>Science &amp; &quot;Arts&quot;</a>', $html);
-        $this->assertStringContainsString('alt="Science &amp; &quot;Arts&quot;"', $html);
-        $this->assertStringNotContainsString('&amp;amp;', $html);
-        $this->assertStringNotContainsString('&amp;quot;', $html);
-    }
-
-    /**
-     * Course names never inject markup into the block.
-     *
-     * Spec: MDL-INT-006.
-     */
-    public function test_course_name_does_not_inject_markup(): void {
-        global $DB;
-        $this->resetAfterTest();
-
-        if (!$DB->get_manager()->table_exists('local_datacurso_ratings')) {
-            $this->markTestSkipped('local_datacurso_ratings is not installed.');
-        }
-
-        $html = $this->render_block_with_recommendations(['fullname' => '<script>alert(1)</script>Evil" onerror="x']);
-
-        $this->assertStringNotContainsString('<script>alert(1)</script>', $html);
-        $this->assertStringNotContainsString('" onerror="x', $html);
+        $this->assertMatchesRegularExpression('/href="[^"]*\/index\.php\?redirect=0&amp;page=1"/', $html);
+        $this->assertStringNotContainsString('/my/index.php', $html);
     }
 
     /**
@@ -176,5 +160,45 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
         $this->assertDebuggingCalled();
         $this->assertStringContainsString(get_string('recserror', 'block_datacurso_recomendate'), $html);
         $this->assertStringNotContainsString('viewmode-selector', $html);
+    }
+
+    /**
+     * Course names with special characters are escaped exactly once.
+     *
+     * Spec: MDL-INT-006.
+     */
+    public function test_course_name_is_escaped_once(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        if (!$DB->get_manager()->table_exists('local_datacurso_ratings')) {
+            $this->markTestSkipped('local_datacurso_ratings is not installed.');
+        }
+
+        $html = $this->render_block_with_recommendations(candidate: ['fullname' => 'Science & "Arts"']);
+
+        $this->assertStringContainsString('>Science &amp; &quot;Arts&quot;</a>', $html);
+        $this->assertStringContainsString('alt="Science &amp; &quot;Arts&quot;"', $html);
+        $this->assertStringNotContainsString('&amp;amp;', $html);
+        $this->assertStringNotContainsString('&amp;quot;', $html);
+    }
+
+    /**
+     * Course names never inject markup into the block.
+     *
+     * Spec: MDL-INT-006.
+     */
+    public function test_course_name_does_not_inject_markup(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        if (!$DB->get_manager()->table_exists('local_datacurso_ratings')) {
+            $this->markTestSkipped('local_datacurso_ratings is not installed.');
+        }
+
+        $html = $this->render_block_with_recommendations(candidate: ['fullname' => '<script>alert(1)</script>Evil" onerror="x']);
+
+        $this->assertStringNotContainsString('<script>alert(1)</script>', $html);
+        $this->assertStringNotContainsString('" onerror="x', $html);
     }
 }
