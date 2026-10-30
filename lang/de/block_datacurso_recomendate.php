@@ -32,6 +32,7 @@ $string['pluginname'] = 'Empfohlene Kurse';
 $string['poweredbydatacurso'] = 'Bereitgestellt von';
 $string['preference'] = 'Kategoriepräferenz: {$a}%';
 $string['privacy:metadata'] = 'Das Plugin block_datacurso_recomendate speichert keine personenbezogenen Daten.';
+$string['recserror'] = 'Die empfohlenen Kurse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.';
 $string['satisfaction'] = 'Gesamtzufriedenheit: {$a}%';
 $string['score'] = 'Bewertung: {$a}';
 $string['view_cards'] = 'Kartenansicht';
