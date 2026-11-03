@@ -32,6 +32,7 @@ $string['pluginname'] = 'Рекомендуемые курсы';
 $string['poweredbydatacurso'] = 'Работает на';
 $string['preference'] = 'Предпочтение по категории: {$a}%';
 $string['privacy:metadata'] = 'Плагин block_datacurso_recomendate не хранит никаких персональных данных.';
+$string['recserror'] = 'Не удалось загрузить рекомендуемые курсы. Повторите попытку позже.';
 $string['satisfaction'] = 'Общая удовлетворенность: {$a}%';
 $string['score'] = 'Оценка: {$a}';
 $string['view_cards'] = 'Просмотр карточками';

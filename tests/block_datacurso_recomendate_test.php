@@ -99,6 +99,44 @@ final class block_datacurso_recomendate_test extends \advanced_testcase {
     }
 
     /**
+     * A failure of the recommendations service degrades to a controlled message and is logged.
+     *
+     * Spec: MDL-INT-012.
+     */
+    public function test_service_failure_shows_error_message(): void {
+        global $CFG;
+        $this->resetAfterTest();
+
+        require_once($CFG->dirroot . '/blocks/moodleblock.class.php');
+        block_load_class('datacurso_recomendate');
+
+        $this->setUser($this->getDataGenerator()->create_user());
+        $record = $this->getDataGenerator()->create_block('datacurso_recomendate');
+        $page = new \moodle_page();
+        $page->set_context(\context_system::instance());
+        $page->set_url('/my/index.php');
+
+        $block = new class extends \block_datacurso_recomendate {
+            /**
+             * Simulate a broken recommendations service.
+             *
+             * @param int $userid User ID.
+             * @return array
+             */
+            protected function get_recommendations(int $userid): array {
+                throw new \dml_read_exception('Simulated service failure');
+            }
+        };
+        $block->_load_instance($record, $page);
+
+        $html = $block->get_content()->text;
+
+        $this->assertDebuggingCalled();
+        $this->assertStringContainsString(get_string('recserror', 'block_datacurso_recomendate'), $html);
+        $this->assertStringNotContainsString('viewmode-selector', $html);
+    }
+
+    /**
      * Course names with special characters are escaped exactly once.
      *
      * Spec: MDL-INT-006.
