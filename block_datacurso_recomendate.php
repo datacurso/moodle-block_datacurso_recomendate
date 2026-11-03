@@ -226,8 +226,13 @@ class block_datacurso_recomendate extends block_base {
             // Get course image using the improved method.
             $imgurl = $this->get_course_image($rec['courseid']);
 
+            // The template escapes the name, so format_string() must not escape it a second time.
             $courses[] = [
-                'fullname' => format_string($rec['fullname']),
+                'fullname' => format_string(
+                    $rec['fullname'],
+                    true,
+                    ['context' => context_course::instance($rec['courseid']), 'escape' => false]
+                ),
                 'courseurl' => $courseurl->out(false),
                 'imageurl' => $imgurl,
                 'hasimage' => !empty($imgurl),
