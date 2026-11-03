@@ -1,11 +1,7 @@
 name: Moodle Plugin CI
 
 on:
-  push:
-    branches:
-      - main
-      - MOODLE_*_STABLE
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
@@ -49,6 +45,9 @@ jobs:
             database: mariadb
           - php: 8.3
             moodle-branch: MOODLE_502_STABLE
+            database: mariadb
+          - php: 8.3
+            moodle-branch: MOODLE_503_STABLE
             database: mariadb
 
     steps:
