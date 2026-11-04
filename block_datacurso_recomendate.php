@@ -158,12 +158,26 @@ class block_datacurso_recomendate extends block_base {
     }
 
     /**
+     * Gets the course recommendations for a user from the ratings service.
+     *
+     * @param int $userid User ID.
+     * @return array Recommendations, best first.
+     */
+    protected function get_recommendations(int $userid): array {
+        global $CFG;
+
+        require_once($CFG->dirroot . '/local/datacurso_ratings/classes/recommendations/service.php');
+
+        return \local_datacurso_ratings\recommendations\service::get_recommendations_for_user($userid, 50);
+    }
+
+    /**
      * Returns the main content of the block.
      *
      * @return stdClass Block content.
      */
     public function get_content() {
-        global $USER, $CFG, $OUTPUT;
+        global $USER, $OUTPUT;
 
         if ($this->content !== null) {
             return $this->content;
@@ -171,8 +185,6 @@ class block_datacurso_recomendate extends block_base {
 
         $this->content = new stdClass();
         $this->content->text = '';
-
-        require_once($CFG->dirroot . '/local/datacurso_ratings/classes/recommendations/service.php');
 
         $viewmode = optional_param('viewmode', '', PARAM_ALPHA);
         if (empty($viewmode)) {
@@ -182,8 +194,17 @@ class block_datacurso_recomendate extends block_base {
         $page = optional_param('page', 0, PARAM_INT);
         $perpage = 6;
 
-        // Get recommendations.
-        $recs = \local_datacurso_ratings\recommendations\service::get_recommendations_for_user($USER->id, 50);
+        // Get recommendations. A service failure must not break the page that hosts the block.
+        try {
+            $recs = $this->get_recommendations($USER->id);
+        } catch (Throwable $e) {
+            debugging('Error getting course recommendations for user ' . $USER->id . ': ' . $e->getMessage(), DEBUG_DEVELOPER);
+            $this->content->text = $OUTPUT->notification(
+                get_string('recserror', 'block_datacurso_recomendate'),
+                'warning'
+            );
+            return $this->content;
+        }
         $total = count($recs);
 
         if (empty($recs)) {
@@ -205,8 +226,13 @@ class block_datacurso_recomendate extends block_base {
             // Get course image using the improved method.
             $imgurl = $this->get_course_image($rec['courseid']);
 
+            // The template escapes the name, so format_string() must not escape it a second time.
             $courses[] = [
-                'fullname' => format_string($rec['fullname']),
+                'fullname' => format_string(
+                    $rec['fullname'],
+                    true,
+                    ['context' => context_course::instance($rec['courseid']), 'escape' => false]
+                ),
                 'courseurl' => $courseurl->out(false),
                 'imageurl' => $imgurl,
                 'hasimage' => !empty($imgurl),
@@ -216,8 +242,10 @@ class block_datacurso_recomendate extends block_base {
             ];
         }
 
+        // Paging links stay on the page that hosts the block (Dashboard or site home), keeping its parameters.
+        $baseurl = new moodle_url($this->page->url);
+
         // View selector.
-        $baseurl = new moodle_url('/my/index.php');
         $selector = html_writer::select(
             [
                 'cards' => get_string('view_cards', 'block_datacurso_recomendate'),

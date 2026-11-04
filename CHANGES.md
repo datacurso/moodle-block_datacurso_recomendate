@@ -2,6 +2,15 @@
 
 All notable changes to this plugin will be documented in this file.
 
+## [1.0.6-wp] - 2026-11-04
+
+**Compatibility note:** This version is compatible only with **Moodle Workplace 4.5**.
+
+### Fixed
+- Recommended course names are escaped only once, so a name with `&` is no longer shown as `&amp;` (#7)
+- A failure of the recommendations service no longer breaks the page that hosts the block: the error is logged with `debugging()` and the block shows a warning notification (#8)
+- The paging bar links keep the user on the page that hosts the block (Dashboard or site home) instead of always sending them to the Dashboard (#9)
+
 ## [1.0.5-wp] - 2026-10-05
 
 **Compatibility note:** This version targets **Moodle Workplace 4.5** only.
